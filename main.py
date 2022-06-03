@@ -15,5 +15,13 @@ from email.mime.base import MIMEBase
 from mimetypes import guess_type as guess_mime_type
 
 # Request all access (permission to read/send/receive emails, manage the inbox, and more)
+file = open('credentials.txt', 'r')
 SCOPES = ['https://mail.google.com/']
-our_email = ''
+email = file.readline().replace('\n', '')
+client_id = file.readline().replace('\n', '')
+client_secret = file.readline().replace('\n', '')
+
+
+print(email)
+print(client_id)
+print(client_secret)
