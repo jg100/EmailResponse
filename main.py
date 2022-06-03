@@ -16,4 +16,4 @@ from mimetypes import guess_type as guess_mime_type
 
 # Request all access (permission to read/send/receive emails, manage the inbox, and more)
 SCOPES = ['https://mail.google.com/']
-our_email = 'info@honeycombtherapy.com'
+our_email = ''
