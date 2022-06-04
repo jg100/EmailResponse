@@ -1,10 +1,12 @@
-# Importing os and pickle module in program  
+# Importing os and pickle module in program
+import base64
 import os
 import pickle
 # Creating utils for Gmail APIs  
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from bs4 import BeautifulSoup
 # Importing libraries for encoding/decoding messages in base64  
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 # Importing libraries for dealing with the attachment of MIME types in Gmail  
@@ -43,5 +45,51 @@ def authenticateGmailAPIs():
     return build('Gmail', 'v1', credentials=creds)  # using Gmail to authenticate
 
 
+def searchMail(keyword, service):
+    result = service.users().messages().list(userId='me').execute()
+
+    # We can also pass maxResults to get any number of emails. Like this:
+    # result = service.users().messages().list(maxResults=200, userId='me').execute()
+    messages = result.get('messages')
+    del messages[5:]
+    print(messages)
+    for msg in messages:
+        # Get the message from its id
+        txt = service.users().messages().get(userId='me', id=msg['id']).execute()
+        print("Start try...")
+        # Use try-except to avoid any Errors
+
+        # Get value of 'payload' from dictionary 'txt'
+        payload = txt['payload']
+        headers = payload['headers']
+
+        # Look for Subject and Sender Email in the headers
+        for d in headers:
+            if d['name'] == 'Subject':
+                subject = d['value']
+            if d['name'] == 'From':
+                sender = d['value']
+
+        # The Body of the message is in Encrypted format. So, we have to decode it.
+        # Get the data and decode it with base 64 decoder.
+        parts = payload.get('parts')[0]
+        data = parts['body']['data']
+        data = data.replace("-", "+").replace("_", "/")
+        decoded_data = base64.b64decode(data)
+
+        # Now, the data obtained is in lxml. So, we will parse
+        # it with BeautifulSoup library
+        soup = BeautifulSoup(decoded_data, "lxml")
+        body = soup.body()
+
+        print("** Email data **")
+         # Printing the subject, sender's email and message
+        print("Subject: ", subject)
+        print("From: ", sender)
+        print("Message: ", body)
+        print('\n')
+
+
 # Get the Gmail API service by calling the function
 service = authenticateGmailAPIs()
+searchMail("n/a", service)
