@@ -51,43 +51,49 @@ def searchMail(keyword, service):
     # We can also pass maxResults to get any number of emails. Like this:
     # result = service.users().messages().list(maxResults=200, userId='me').execute()
     messages = result.get('messages')
-    del messages[5:]
+    del messages[50:]
     print(messages)
+
     for msg in messages:
-        # Get the message from its id
-        txt = service.users().messages().get(userId='me', id=msg['id']).execute()
-        print("Start try...")
-        # Use try-except to avoid any Errors
+        try:
+            # Get the message from its id
+            txt = service.users().messages().get(userId='me', id=msg['id']).execute()
+            print("Start try...")
+            # Use try-except to avoid any Errors
 
-        # Get value of 'payload' from dictionary 'txt'
-        payload = txt['payload']
-        headers = payload['headers']
+            # Get value of 'payload' from dictionary 'txt'
+            payload = txt['payload']
+            headers = payload['headers']
 
-        # Look for Subject and Sender Email in the headers
-        for d in headers:
-            if d['name'] == 'Subject':
-                subject = d['value']
-            if d['name'] == 'From':
-                sender = d['value']
+            # Look for Subject and Sender Email in the headers
+            for d in headers:
+                if d['name'] == 'Subject':
+                    subject = d['value']
+                if d['name'] == 'From':
+                    sender = d['value']
 
-        # The Body of the message is in Encrypted format. So, we have to decode it.
-        # Get the data and decode it with base 64 decoder.
-        parts = payload.get('parts')[0]
-        data = parts['body']['data']
-        data = data.replace("-", "+").replace("_", "/")
-        decoded_data = base64.b64decode(data)
+            # The Body of the message is in Encrypted format. So, we have to decode it.
+            # Get the data and decode it with base 64 decoder.
+            parts = payload.get('parts')[0]
+            data = parts['body']['data']
+            data = data.replace("-", "+").replace("_", "/")
+            decoded_data = base64.b64decode(data)
 
-        # Now, the data obtained is in lxml. So, we will parse
-        # it with BeautifulSoup library
-        soup = BeautifulSoup(decoded_data, "lxml")
-        body = soup.body()
+            # Now, the data obtained is in lxml. So, we will parse
+            # it with BeautifulSoup library
+            soup = BeautifulSoup(decoded_data, "lxml")
+            body = soup.body()
 
-        print("** Email data **")
-         # Printing the subject, sender's email and message
-        print("Subject: ", subject)
-        print("From: ", sender)
-        print("Message: ", body)
-        print('\n')
+            if sender == "noreply@123formbuilder.com":
+                print("** Email data **")
+                 # Printing the subject, sender's email and message
+                print("Subject: ", subject)
+                print("From: ", sender)
+                print("Message: ", body)
+                print('\n')
+        except:
+            print("Exception...")
+            pass
 
 
 # Get the Gmail API service by calling the function
